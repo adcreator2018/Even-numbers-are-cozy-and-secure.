@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="댕댕이MBTI">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#3D3480">
+<title>댕댕이 MBTI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{
+  --P:#3D3480;--P2:#6259C8;--PL:#EDEAFF;--PD:#26206B;
+  --G:#0A6E52;--GL:#DFF5EC;
+  --O:#C2410C;--OL:#FFF1EC;
+  --bg:#F4F3FC;--card:#FFFFFF;
+  --t1:#1C1A3A;--t2:#4A4870;--t3:#9896B8;
+  --bd:rgba(98,89,200,0.15);
+  --r:18px;--rs:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--t1);}
+.app{max-width:460px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+.screen{display:none;flex-direction:column;flex:1;}
+.screen.active{display:flex;}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:999;background:linear-gradient(160deg,var(--P) 0%,var(--P2) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .6s;}
+#splash.hide{opacity:0;pointer-events:none;}
+.sp-icon{font-size:70px;margin-bottom:18px;animation:bounce .8s ease infinite alternate;}
+@keyframes bounce{to{transform:translateY(-10px);}}
+.sp-title{font-size:26px;font-weight:900;color:#fff;letter-spacing:1px;}
+.sp-sub{font-size:13px;color:rgba(255,255,255,.65);margin-top:6px;}
+
+/* TOPBAR */
+.topbar{padding:env(safe-area-inset-top,0px) 20px 0;padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-bottom:14px;}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;}
+.tb-title{font-size:17px;font-weight:700;color:#fff;}
+.tb-badge{background:rgba(255,255,255,.18);color:#fff;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;}
+.tb-btn{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;font-family:inherit;}
+
+/* ── INTRO ── */
+.intro-hero{background:linear-gradient(160deg,var(--P) 0%,var(--P2) 100%);padding:0 20px 28px;text-align:center;}
+.hero-icon{width:88px;height:88px;border-radius:26px;background:rgba(255,255,255,.15);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:48px;}
+.hero-title{font-size:24px;font-weight:900;color:#fff;line-height:1.3;margin-bottom:8px;}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.72);line-height:1.7;}
+.intro-body{padding:18px 20px 24px;flex:1;}
+
+/* 이름 입력 */
+.name-section{background:var(--card);border-radius:var(--r);border:1px solid var(--bd);padding:16px;margin-bottom:14px;}
+.name-label{font-size:13px;font-weight:700;color:var(--t2);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.name-input{width:100%;border:1.5px solid var(--bd);border-radius:var(--rs);padding:11px 14px;font-size:15px;font-family:inherit;color:var(--t1);background:var(--bg);outline:none;transition:border-color .15s;}
+.name-input:focus{border-color:var(--P2);}
+.name-input::placeholder{color:var(--t3);}
+
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.badge{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);padding:10px 12px;flex:1;min-width:130px;}
+.badge-icon{font-size:18px;}
+.badge-label{font-size:12px;font-weight:700;color:var(--t1);}
+.badge-desc{font-size:10px;color:var(--t3);margin-top:1px;}
+.expert-note{background:var(--PL);border-radius:var(--rs);padding:11px 13px;margin-bottom:16px;display:flex;gap:9px;align-items:flex-start;}
+.expert-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.expert-text{font-size:11.5px;color:var(--PD);line-height:1.7;}
+.btn-start{display:block;width:100%;background:linear-gradient(135deg,var(--P),var(--P2));border:none;border-radius:var(--r);padding:16px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-start:active{opacity:.88;}
+
+/* ── QUIZ ── */
+.quiz-header{background:linear-gradient(160deg,var(--P) 0%,var(--P2) 100%);padding:0 20px 16px;}
+.prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.prog-dim{font-size:12px;color:rgba(255,255,255,.75);font-weight:500;}
+.prog-num{font-size:12px;font-weight:700;color:#fff;}
+.prog-track{background:rgba(255,255,255,.2);border-radius:4px;height:5px;}
+.prog-fill{background:#fff;border-radius:4px;height:5px;transition:width .4s ease;}
+.quiz-body{padding:14px 20px 0;flex:1;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+.dim-tag{display:inline-flex;align-items:center;gap:5px;background:var(--PL);border-radius:20px;padding:4px 12px;align-self:flex-start;}
+.dim-tag-dot{width:7px;height:7px;border-radius:50%;background:var(--P2);}
+.dim-tag-text{font-size:11px;color:var(--PD);font-weight:700;}
+.q-box{background:var(--card);border-radius:var(--r);border:1px solid var(--bd);padding:16px;}
+.q-title{font-size:15px;font-weight:700;color:var(--t1);line-height:1.6;margin-bottom:8px;}
+.q-hint{font-size:12px;color:var(--t3);background:var(--bg);border-radius:var(--rs);padding:8px 10px;line-height:1.6;}
+.opts{display:flex;flex-direction:column;gap:8px;}
+.opt{display:flex;align-items:flex-start;gap:11px;background:var(--bg);border:1.5px solid transparent;border-radius:var(--rs);padding:12px 13px;cursor:pointer;text-align:left;width:100%;transition:all .15s;font-family:inherit;}
+.opt:active{transform:scale(.98);}
+.opt.sel{background:var(--PL);border-color:var(--P2);}
+.opt-score{width:22px;height:22px;border-radius:50%;background:var(--card);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--t3);flex-shrink:0;margin-top:1px;}
+.opt.sel .opt-score{background:var(--P);border-color:var(--P);color:#fff;}
+.opt-main{font-size:13.5px;font-weight:500;color:var(--t1);line-height:1.5;}
+.opt.sel .opt-main{color:var(--PD);}
+.opt-detail{font-size:11.5px;color:var(--t3);margin-top:3px;line-height:1.4;}
+.opt.sel .opt-detail{color:var(--P2);}
+.nav{display:flex;gap:10px;padding:12px 20px 20px;}
+.btn-prev{background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);padding:13px 16px;font-size:13px;color:var(--t2);cursor:pointer;font-family:inherit;}
+.btn-prev:active{background:var(--bg);}
+.btn-next{flex:1;background:linear-gradient(135deg,var(--P),var(--P2));border:none;border-radius:var(--rs);padding:13px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+.btn-next:disabled{opacity:.3;cursor:not-allowed;}
+.btn-next:not(:disabled):active{opacity:.85;}
+
+/* ── RESULT ── */
+.result-hero{background:linear-gradient(160deg,var(--P) 0%,var(--P2) 100%);padding:0 20px 28px;text-align:center;}
+.r-dog-name{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:4px;}
+.r-icon{font-size:50px;margin-bottom:6px;}
+.r-label{font-size:12px;color:rgba(255,255,255,.65);margin-bottom:10px;}
+.mbti-box{display:inline-block;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:28px;font-weight:900;padding:10px 32px;border-radius:var(--r);letter-spacing:6px;margin-bottom:8px;}
+.r-type{font-size:15px;font-weight:700;color:#fff;}
+.result-body{padding:14px 20px 24px;flex:1;display:flex;flex-direction:column;gap:11px;overflow-y:auto;}
+.desc-card{background:var(--card);border-radius:var(--r);border:1px solid var(--bd);padding:16px;}
+.desc-text{font-size:13.5px;color:var(--t2);line-height:1.8;}
+.breed-tag{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border-radius:20px;padding:5px 12px;margin-top:10px;font-size:12px;color:var(--t3);}
+.traits-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.trait-card{background:var(--card);border-radius:var(--rs);border:1px solid var(--bd);padding:12px;}
+.trait-head{display:flex;justify-content:space-between;margin-bottom:6px;}
+.trait-name{font-size:12px;font-weight:700;color:var(--t1);}
+.trait-pct{font-size:12px;font-weight:700;color:var(--P);}
+.trait-track{background:var(--bg);border-radius:4px;height:5px;overflow:hidden;}
+.trait-fill{height:5px;border-radius:4px;background:var(--P2);}
+.trait-poles{display:flex;justify-content:space-between;margin-top:4px;}
+.trait-pole{font-size:10px;color:var(--t3);}
+.keys-card{background:var(--card);border-radius:var(--r);border:1px solid var(--bd);padding:16px;}
+.keys-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.keys-list{display:flex;flex-direction:column;gap:7px;}
+.key-item{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--t1);line-height:1.5;}
+.key-dot{width:7px;height:7px;border-radius:50%;background:var(--P2);flex-shrink:0;margin-top:5px;}
+.tip-card{background:var(--GL);border-radius:var(--rs);padding:12px 14px;border:1px solid rgba(10,110,82,.15);}
+.tip-title{font-size:11px;font-weight:700;color:var(--G);margin-bottom:6px;}
+.tip-text{font-size:12.5px;color:#0A5040;line-height:1.7;}
+
+/* 액션 버튼 행 */
+.action-row{display:flex;gap:8px;}
+.btn-save{flex:1;background:linear-gradient(135deg,#F97316,#EA580C);border:none;border-radius:var(--rs);padding:13px 10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;}
+.btn-save:active{opacity:.85;}
+.btn-compat{flex:1;background:linear-gradient(135deg,#0891B2,#0E7490);border:none;border-radius:var(--rs);padding:13px 10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;}
+.btn-compat:active{opacity:.85;}
+.btn-retry{width:100%;background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);padding:13px;font-size:13.5px;color:var(--t2);cursor:pointer;font-family:inherit;}
+.btn-retry:active{background:var(--bg);}
+
+/* ── 이미지 카드 (캡처용) ── */
+#share-card{
+  position:fixed;left:-9999px;top:0;
+  width:400px;background:linear-gradient(160deg,#3D3480,#6259C8);
+  padding:32px 28px;font-family:'Noto Sans KR',sans-serif;
+  border-radius:24px;
+}
+.sc-header{text-align:center;margin-bottom:20px;}
+.sc-app{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px;letter-spacing:1px;}
+.sc-dog{font-size:18px;font-weight:700;color:rgba(255,255,255,.9);margin-bottom:4px;}
+.sc-icon{font-size:52px;margin-bottom:8px;}
+.sc-mbti{display:inline-block;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);color:#fff;font-size:28px;font-weight:900;padding:8px 28px;border-radius:14px;letter-spacing:5px;margin-bottom:8px;}
+.sc-type{font-size:15px;font-weight:700;color:#fff;}
+.sc-body{background:rgba(255,255,255,.1);border-radius:14px;padding:16px;margin-top:16px;}
+.sc-desc{font-size:12px;color:rgba(255,255,255,.85);line-height:1.7;margin-bottom:12px;}
+.sc-bars{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.sc-bar-item{}
+.sc-bar-label{font-size:10px;color:rgba(255,255,255,.7);margin-bottom:3px;display:flex;justify-content:space-between;}
+.sc-bar-track{background:rgba(255,255,255,.15);border-radius:3px;height:5px;overflow:hidden;}
+.sc-bar-fill{height:5px;border-radius:3px;background:#fff;}
+.sc-footer{margin-top:16px;text-align:center;font-size:10px;color:rgba(255,255,255,.4);}
+
+/* ── 궁합 화면 ── */
+#s-compat{background:var(--bg);}
+.compat-header{background:linear-gradient(160deg,#0891B2,#0E7490);padding:0 20px 24px;}
+.compat-body{padding:16px 20px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.compat-dogs{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:4px;}
+.compat-dog{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px;text-align:center;flex:1;}
+.compat-dog-icon{font-size:32px;margin-bottom:4px;}
+.compat-dog-name{font-size:13px;font-weight:700;color:var(--t1);}
+.compat-dog-mbti{font-size:12px;color:var(--P);font-weight:700;margin-top:2px;}
+.compat-heart{font-size:28px;}
+.compat-score-card{background:var(--card);border-radius:var(--r);border:1px solid var(--bd);padding:20px;text-align:center;}
+.compat-score-label{font-size:12px;color:var(--t3);margin-bottom:8px;}
+.compat-score-num{font-size:52px;font-weight:900;color:var(--P);line-height:1;}
+.compat-score-suffix{font-size:18px;color:var(--t3);}
+.compat-score-bar{background:var(--bg);border-radius:6px;height:10px;overflow:hidden;margin:12px 0;}
+.compat-score-fill{height:10px;border-radius:6px;transition:width 1s ease;}
+.compat-score-title{font-size:16px;font-weight:700;color:var(--t1);margin-bottom:6px;}
+.compat-score-desc{font-size:13px;color:var(--t2);line-height:1.7;}
+.compat-dims{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.compat-dim-card{background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);padding:12px;text-align:center;}
+.compat-dim-icon{font-size:20px;margin-bottom:4px;}
+.compat-dim-label{font-size:11px;color:var(--t3);margin-bottom:2px;}
+.compat-dim-result{font-size:13px;font-weight:700;}
+.compat-dim-result.good{color:#0891B2;}
+.compat-dim-result.ok{color:#D97706;}
+.compat-dim-result.diff{color:#DC2626;}
+.compat-tips{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:16px;}
+.compat-tips-title{font-size:12px;font-weight:700;color:var(--t3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+.compat-tip-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:13px;color:var(--t1);line-height:1.5;}
+.compat-tip-icon{flex-shrink:0;}
+.compat-btn-row{display:flex;gap:8px;}
+.btn-compat-save{flex:1;background:linear-gradient(135deg,#F97316,#EA580C);border:none;border-radius:var(--rs);padding:13px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:5px;}
+.btn-compat-back{flex:1;background:var(--card);border:1px solid var(--bd);border-radius:var(--rs);padding:13px;font-size:13px;color:var(--t2);cursor:pointer;font-family:inherit;}
+
+/* 두번째 강아지 테스트 안내 */
+.dog2-section{background:var(--card);border-radius:var(--r);border:1px solid var(--bd);padding:16px;}
+.dog2-title{font-size:14px;font-weight:700;color:var(--t1);margin-bottom:6px;}
+.dog2-desc{font-size:12.5px;color:var(--t2);line-height:1.6;margin-bottom:12px;}
+.dog2-name-row{display:flex;gap:8px;align-items:center;}
+.dog2-input{flex:1;border:1.5px solid var(--bd);border-radius:var(--rs);padding:10px 12px;font-size:14px;font-family:inherit;color:var(--t1);background:var(--bg);outline:none;transition:border-color .15s;}
+.dog2-input:focus{border-color:var(--P2);}
+.btn-dog2-start{background:linear-gradient(135deg,var(--P),var(--P2));border:none;border-radius:var(--rs);padding:10px 16px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap;}
+
+/* toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(30,27,75,.92);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:1000;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* 저장 중 오버레이 */
+.saving-overlay{position:fixed;inset:0;background:rgba(30,27,75,.6);z-index:998;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;pointer-events:none;}
+.saving-overlay.show{opacity:1;pointer-events:all;}
+.saving-box{background:#fff;border-radius:var(--r);padding:24px 32px;text-align:center;}
+.saving-icon{font-size:36px;margin-bottom:8px;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.saving-text{font-size:14px;color:var(--t2);}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="sp-icon">🐾</div>
+  <div class="sp-title">댕댕이 MBTI</div>
+  <div class="sp-sub">반려견 성격 유형 정밀 분석</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="saving-overlay" id="saving-overlay">
+  <div class="saving-box">
+    <div class="saving-icon">⚙️</div>
+    <div class="saving-text">이미지 저장 중...</div>
+  </div>
+</div>
+
+<!-- 이미지 캡처용 카드 (숨김) -->
+<div id="share-card">
+  <div class="sc-header">
+    <div class="sc-app">🐾 댕댕이 MBTI</div>
+    <div class="sc-dog" id="sc-dog-name"></div>
+    <div class="sc-icon" id="sc-icon"></div>
+    <div class="sc-mbti" id="sc-mbti"></div>
+    <div class="sc-type" id="sc-type-name"></div>
+  </div>
+  <div class="sc-body">
+    <div class="sc-desc" id="sc-desc"></div>
+    <div class="sc-bars" id="sc-bars"></div>
+  </div>
+  <div class="sc-footer">댕댕이 MBTI | 반려견 성격 유형 테스트</div>
+</div>
+
+<div class="app">
+
+<!-- ── INTRO ── -->
+<div class="screen active" id="s-intro">
+  <div class="intro-hero">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <span class="tb-title">댕댕이 MBTI</span>
+        <span class="tb-badge">전문가 검증</span>
+      </div>
+    </div>
+    <div class="hero-icon">🐶</div>
+    <div class="hero-title">우리 강아지<br>성격 유형 정밀 분석</div>
+    <div class="hero-sub">C-BARQ·DPQ 기반 행동 관찰 문항으로<br>반려견의 MBTI 유형을 알아보세요</div>
+  </div>
+  <div class="intro-body">
+    <div class="name-section">
+      <div class="name-label">🐶 강아지 이름을 입력해주세요</div>
+      <input class="name-input" id="dog-name-input" type="text" placeholder="예: 콩이, 초코, 몽이..." maxlength="10">
+    </div>
+    <div class="badge-row">
+      <div class="badge"><div class="badge-icon">📋</div><div><div class="badge-label">12문항 · 4분</div><div class="badge-desc">4가지 선택지</div></div></div>
+      <div class="badge"><div class="badge-icon">🧬</div><div><div class="badge-label">4가지 차원</div><div class="badge-desc">E/I·S/N·T/F·J/P</div></div></div>
+      <div class="badge"><div class="badge-icon">🏆</div><div><div class="badge-label">16가지 유형</div><div class="badge-desc">정밀 점수 산출</div></div></div>
+      <div class="badge"><div class="badge-icon">💑</div><div><div class="badge-label">궁합 분석</div><div class="badge-desc">두 마리 비교</div></div></div>
+    </div>
+    <div class="expert-note">
+      <div class="expert-icon">🔬</div>
+      <div class="expert-text">펜실베이니아대 <b>C-BARQ</b> 및 텍사스대 <b>DPQ</b>를 참고한 행동 관찰 기반 테스트입니다. 강아지의 평소 행동을 솔직하게 답해주세요.</div>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">테스트 시작하기 →</button>
+  </div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div class="screen" id="s-quiz">
+  <div class="quiz-header">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <span class="tb-title" id="prog-dim-top">에너지 방향</span>
+        <span class="prog-num" id="prog-num">1 / 12</span>
+      </div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="quiz-body">
+    <div class="dim-tag"><div class="dim-tag-dot"></div><span class="dim-tag-text" id="dim-tag-text"></span></div>
+    <div class="q-box">
+      <div class="q-title" id="q-title"></div>
+      <div class="q-hint" id="q-hint"></div>
+    </div>
+    <div class="opts" id="q-opts"></div>
+  </div>
+  <div class="nav">
+    <button class="btn-prev" id="btn-prev" onclick="prevQ()">← 이전</button>
+    <button class="btn-next" id="btn-next" onclick="nextQ()" disabled>다음 →</button>
+  </div>
+</div>
+
+<!-- ── RESULT ── -->
+<div class="screen" id="s-result">
+  <div class="result-hero">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <span class="tb-title" id="r-dog-name-top">분석 결과</span>
+        <button class="tb-btn" onclick="restart()">다시하기</button>
+      </div>
+    </div>
+    <div class="r-dog-name" id="r-dog-subtitle"></div>
+    <div class="r-icon" id="r-icon"></div>
+    <div class="r-label">성격 유형</div>
+    <div class="mbti-box" id="r-mbti"></div>
+    <div class="r-type" id="r-type"></div>
+  </div>
+  <div class="result-body">
+    <div class="desc-card">
+      <div class="desc-text" id="r-desc"></div>
+      <div class="breed-tag" id="r-breed"></div>
+    </div>
+    <div class="traits-grid" id="r-traits"></div>
+    <div class="keys-card" id="r-keys"></div>
+    <div class="tip-card" id="r-tip"></div>
+
+    <!-- 두 번째 강아지 궁합 -->
+    <div class="dog2-section" id="dog2-section">
+      <div class="dog2-title">💑 두 마리 궁합 보기</div>
+      <div class="dog2-desc">두 번째 강아지 이름을 입력하고 테스트를 시작하세요. 결과 후 두 마리의 궁합을 분석해 드려요!</div>
+      <div class="dog2-name-row">
+        <input class="dog2-input" id="dog2-name-input" type="text" placeholder="두 번째 강아지 이름..." maxlength="10">
+        <button class="btn-dog2-start" onclick="startDog2()">테스트 →</button>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-save" onclick="saveImage()">📸 이미지 저장</button>
+      <button class="btn-compat" id="btn-show-compat" onclick="showCompat()" style="display:none">💑 궁합 보기</button>
+    </div>
+    <button class="btn-retry" onclick="restart()">🔄 처음부터 다시하기</button>
+  </div>
+</div>
+
+<!-- ── 궁합 화면 ── -->
+<div class="screen" id="s-compat">
+  <div class="compat-header">
+    <div class="topbar" style="padding-bottom:0;">
+      <div class="topbar-inner">
+        <span class="tb-title">💑 궁합 분석</span>
+        <button class="tb-btn" onclick="show('s-result')">← 돌아가기</button>
+      </div>
+    </div>
+  </div>
+  <div class="compat-body" id="compat-body"></div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+const DIM={E:'에너지 방향',S:'정보 수집 방식',T:'감정·공감 반응',J:'생활 패턴'};
+
+const qs=[
+  {dim:'E',q:'처음 보는 사람이 집에 방문했을 때 강아지의 첫 반응은?',hint:'초인종 소리가 나고 문이 열리는 순간을 떠올려보세요.',
+   opts:[{s:3,m:'현관으로 질주하며 펄쩍 뛰고, 낯선 사람에게도 즉시 달려들어요',d:'경계심 없이 몇 초 안에 친해지려 해요'},
+         {s:2,m:'꼬리를 흔들며 반기지만, 잠시 냄새를 맡은 후 친해져요',d:'적당한 흥분 뒤 금방 안정돼요'},
+         {s:1,m:'주인 뒤에 숨거나 거리를 두며 낯선 사람을 오래 관찰해요',d:'10분 이상 지나야 조심스럽게 다가가요'},
+         {s:0,m:'짖거나 으르렁거리며 낯선 사람을 강하게 경계해요',d:'오랜 시간이 지나도 잘 친해지지 않아요'}]},
+  {dim:'E',q:'강아지가 혼자 집에 남겨졌을 때 어떤 모습인가요?',hint:'CCTV 또는 귀가 후 집 상태를 기준으로 답해주세요.',
+   opts:[{s:3,m:'짖거나 하울링하고, 문·창문을 긁거나 물건을 파괴해요',d:'심한 분리불안 행동이에요'},
+         {s:2,m:'처음엔 낑낑거리다가 30분 후쯤 자리를 잡고 쉬어요',d:'보호자 귀가 시 매우 흥분해서 반겨요'},
+         {s:1,m:'조용히 낮잠을 자거나 혼자 장난감을 갖고 놀아요',d:'귀가해도 꼬리를 흔드는 정도로 차분해요'},
+         {s:0,m:'혼자 있는 시간을 즐기는 듯 편안하게 지내요',d:'귀가해도 크게 반응하지 않고 자리를 지켜요'}]},
+  {dim:'E',q:'다른 강아지나 사람이 많은 환경(공원, 애견카페 등)에서의 반응은?',hint:'최근 외출 중 강아지의 모습을 떠올려보세요.',
+   opts:[{s:3,m:'바로 무리에 뛰어들어 누구에게나 먼저 다가가요',d:'에너지가 넘쳐 흥분 상태가 오래 지속돼요'},
+         {s:2,m:'잠깐 상황을 살핀 후 적극적으로 어울려요',d:'새로운 친구를 만나는 걸 좋아해요'},
+         {s:1,m:'주인 옆에 붙어 있으면서 관심 있는 것만 골라 다가가요',d:'선택적으로 어울리고 일정 시간 후 지쳐해요'},
+         {s:0,m:'멀찍이 서서 관찰만 하거나 주인 뒤에 숨어요',d:'낯선 환경 자체를 불편해하는 편이에요'}]},
+  {dim:'S',q:'산책 중 새로운 냄새나 물체를 발견했을 때 강아지는?',hint:'평소 산책 루트에서 낯선 것을 처음 만났을 때를 떠올려보세요.',
+   opts:[{s:3,m:'완전히 멈춰 서서 15초 이상 꼼꼼히 냄새 맡고 주변까지 탐색해요',d:'지나쳐도 뒤돌아와 한 번 더 확인할 정도예요'},
+         {s:2,m:'5~10초 정도 냄새를 맡고 확인 후 다시 걸어요',d:'호기심은 있지만 집착하지 않아요'},
+         {s:1,m:'잠깐 눈길을 주다 곧 다른 것에 관심을 옮겨요',d:'움직이는 사물(새, 자전거)에 더 반응해요'},
+         {s:0,m:'거의 신경 쓰지 않고 목적지를 향해 계속 걸어요',d:'냄새보다 속도나 운동 자체를 즐겨요'}]},
+  {dim:'S',q:'강아지가 새 장난감을 받았을 때의 반응은?',hint:'마지막으로 새 장난감을 줬을 때를 떠올려보세요.',
+   opts:[{s:3,m:'받자마자 물고 다니며 숨겨놓고 오래 집착해요',d:'예전 장난감도 절대 버리지 않으려 해요'},
+         {s:2,m:'처음엔 적극적으로 놀다가 며칠 후에도 꾸준히 사용해요',d:'특별히 선호하는 장난감 타입이 있어요'},
+         {s:1,m:'처음 하루이틀은 열광적으로 놀다가 흥미가 줄어들어요',d:'새 자극이 있을 때만 다시 관심을 보여요'},
+         {s:0,m:'장난감 자체보다 주인과 함께 노는 것을 더 좋아해요',d:'사물보다 사람과의 상호작용을 선호해요'}]},
+  {dim:'S',q:'처음 보는 새로운 음식(간식)을 줬을 때 반응은?',hint:'기존에 먹지 않던 간식이나 음식을 처음 줬을 때를 떠올려보세요.',
+   opts:[{s:3,m:'꼼꼼히 냄새를 맡고 핥아보다가 조심스럽게 먹어요',d:'한 번 거부한 음식은 계속 안 먹는 경향이에요'},
+         {s:2,m:'냄새를 맡고 확인한 후 천천히 먹어요',d:'새 음식도 받아들이지만 즉흥적이지는 않아요'},
+         {s:1,m:'냄새를 살짝 맡고 바로 먹어버려요',d:'음식에 대한 거부감이 거의 없는 편이에요'},
+         {s:0,m:'냄새도 제대로 안 맡고 순식간에 먹어치워요',d:'음식이면 뭐든 열정적으로 받아들여요'}]},
+  {dim:'T',q:'가족이 울거나 심하게 힘들어할 때 강아지는 어떻게 하나요?',hint:'실제로 감정적으로 힘든 순간이 있었을 때를 떠올려보세요.',
+   opts:[{s:3,m:'즉시 다가와 무릎에 올라오거나 얼굴을 핥으며 위로해요',d:'보호자의 감정 변화를 1~2분 내에 감지해요'},
+         {s:2,m:'슬며시 다가와 옆에 조용히 붙어 있어요',d:'먼저 핥지 않지만 떨어지지 않으려 해요'},
+         {s:1,m:'평소보다 조용해지거나 주인을 멀리서 바라봐요',d:'뭔가 이상하다는 건 아는 것 같지만 행동은 안 해요'},
+         {s:0,m:'별 반응 없이 평소처럼 놀거나 자려고 해요',d:'인간의 감정 신호를 잘 읽지 못하는 편이에요'}]},
+  {dim:'T',q:'"안 돼!" 또는 단호한 목소리로 혼냈을 때 강아지의 반응은?',hint:'잘못된 행동을 했을 때 야단친 직후 15분간의 모습을 떠올려보세요.',
+   opts:[{s:3,m:'꼬리를 내리고 배를 보이며 한참 동안 풀이 죽어 있어요',d:'눈을 마주치려 하지 않고 구석에 웅크려요'},
+         {s:2,m:'잠깐 주눅 들었다가 5~10분 후 슬그머니 다가와요',d:'눈치를 보며 용서를 구하는 것 같아요'},
+         {s:1,m:'멈칫하지만 2~3분 내에 평소처럼 행동해요',d:'혼나는 것에 크게 타격을 받지 않는 편이에요'},
+         {s:0,m:'거의 개의치 않고 바로 같은 행동을 반복해요',d:'야단에 반응이 없어 훈련이 어려운 편이에요'}]},
+  {dim:'T',q:'아프거나 컨디션이 좋지 않을 때 강아지는 어떻게 하나요?',hint:'병원 다녀온 날 또는 기운이 없던 날을 떠올려보세요.',
+   opts:[{s:3,m:'더 많이 보호자를 쫓아다니며 관심을 요구해요',d:'낑낑거리거나 무릎에 올라오려 해요'},
+         {s:2,m:'평소보다 조용하지만 옆에 있으면 안심하는 것 같아요',d:'위로받길 원하지만 심하게 표현하지 않아요'},
+         {s:1,m:'혼자 조용히 있으려 하고 쓰다듬으면 피해요',d:'아픈 것을 숨기는 편이에요'},
+         {s:0,m:'구석에 숨어 완전히 혼자 있으려 해요',d:'접촉을 거부하고 고통을 숨겨요'}]},
+  {dim:'J',q:'식사·산책 시간이 평소보다 늦어지면 강아지는 어떻게 하나요?',hint:'일과 시간이 10분 이상 달라졌을 때를 떠올려보세요.',
+   opts:[{s:3,m:'정확한 시간에 와서 짖고, 발로 긁거나 리드줄을 물고 와요',d:'5분만 늦어도 강하게 재촉해요'},
+         {s:2,m:'보호자 앞에 앉아 빤히 쳐다보거나 낑낑거려요',d:'알리긴 하지만 격렬하지 않아요'},
+         {s:1,m:'배가 고프거나 산책하고 싶을 때 스스로 신호를 보내요',d:'정해진 시간에 크게 얽매이지 않아요'},
+         {s:0,m:'보호자가 챙겨줄 때까지 조용히 기다려요',d:'시간 변화에 거의 반응하지 않아요'}]},
+  {dim:'J',q:'평소 산책 루트와 다른 방향으로 리드줄을 당기면?',hint:'가던 방향이 아닌 반대 방향으로 유도했을 때를 떠올려보세요.',
+   opts:[{s:3,m:'익숙한 방향으로 계속 당기고, 새 루트에서 걸음이 느려지거나 멈춰요',d:'낯선 환경에서 긴장하거나 예민해져요'},
+         {s:2,m:'처음엔 저항하지만 보호자를 따라 결국 따라가요',d:'새 루트는 다소 불안해하지만 적응해요'},
+         {s:1,m:'별로 개의치 않고 어디든 즐겁게 탐색해요',d:'새로운 환경에 비교적 빠르게 적응해요'},
+         {s:0,m:'오히려 새 방향에 더 신나서 먼저 달려가려 해요',d:'새로운 경로일수록 더 활발해져요'}]},
+  {dim:'J',q:'가구 배치가 바뀌거나 새 장소에서 잠을 자야 할 때?',hint:'이사·여행·인테리어 변경 등 잠자리가 달라진 경험을 떠올려보세요.',
+   opts:[{s:3,m:'자던 장소가 아니면 밤새 안절부절못하거나 잠을 거의 못 자요',d:'새 침대·방석 적응에 일주일 이상 걸려요'},
+         {s:2,m:'처음 하루이틀은 불안해하지만 금방 익숙해져요',d:'환경 변화에 다소 예민하지만 적응은 해요'},
+         {s:1,m:'편한 자리를 빠르게 찾아 무난하게 자요',d:'환경 변화에 크게 스트레스를 받지 않아요'},
+         {s:0,m:'어디서든 상관없이 눕자마자 잘 자요',d:'환경 변화에 거의 영향받지 않는 편이에요'}]}
+];
+
+const results={
+  ESTJ:{i:'🐾',t:'원칙주의 대장견',d:'루틴과 규칙을 철저히 지키며 가족을 든든하게 보호하는 리더형이에요. 훈련 습득이 빠르고 책임감이 강하지만, 일과가 흔들리면 스트레스를 받아요.',b:'저먼 셰퍼드, 로트와일러',keys:['루틴 이탈 시 강한 스트레스 반응','새로운 사람에게 사교적','체계적인 훈련에 최적화','강한 보호 본능'],tip:'일관된 식사·산책 시간이 핵심이에요. 루틴이 잡혀 있으면 훈련 효율이 최고 수준으로 올라가요.'},
+  ESTP:{i:'🐕',t:'충동적 액션 히어로',d:'생각보다 행동이 먼저인 에너지 폭발형이에요. 새로운 자극과 모험을 사랑하고 지루함을 참지 못해요. 충동적 행동으로 훈련에 어려움이 생길 수 있어요.',b:'잭 러셀 테리어, 달마시안',keys:['충동적이고 즉흥적인 행동','탁월한 순발력과 민첩성','짧은 집중력','높은 대담성'],tip:'짧고 강렬한 훈련이 효과적이에요. 충분한 운동으로 에너지를 발산시킨 후 훈련하세요.'},
+  ESFJ:{i:'🐶',t:'사랑둥이 소셜 버터플라이',d:'가족과의 유대가 삶의 전부예요. 누구에게나 반갑게 다가가고 칭찬 한 마디에 온몸이 반응해요. 혼자 있는 시간을 매우 힘들어해요.',b:'골든 리트리버, 래브라도',keys:['뛰어난 사회성','분리불안 발생 위험','칭찬에 즉각적 반응','강한 가족 유대감'],tip:'칭찬 중심의 긍정 강화 훈련이 가장 잘 맞아요. 분리불안 훈련도 병행하세요.'},
+  ESFP:{i:'🦮',t:'파티 에너자이저',d:'어디서든 분위기를 살리는 타고난 엔터테이너예요. 즉흥적이고 자유롭지만 지루함을 견디지 못해요.',b:'비글, 포메라니안',keys:['탁월한 적응력','즉흥적 행동 패턴','지루함에 취약','감각 자극 선호'],tip:'다양한 환경과 사람을 경험시켜 주세요. 새로운 자극이 있는 환경에서 더 행복해요.'},
+  ENTJ:{i:'🐕‍🦺',t:'카리스마 전략 리더견',d:'빠른 학습 능력과 강한 의지를 겸비한 천재형이에요. 무리 안에서 자연스럽게 리더 역할을 하고, 두뇌를 써야 하는 활동이 필요해요.',b:'보더 콜리, 도베르만',keys:['탁월한 훈련 습득 속도','강한 리더십','정신적 자극 필수','강인한 의지력'],tip:'노즈워크, 어질리티 등 두뇌를 쓰는 활동을 충분히 제공하세요.'},
+  ENTP:{i:'🐺',t:'경계 탈출 발명가',d:'규칙을 창의적으로 우회하는 장난꾸러기예요. 탈출이나 새로운 방법으로 원하는 것을 얻는 데 천재적이에요.',b:'잭 러셀, 시베리안 허스키',keys:['높은 문제 해결 능력','경계·탈출 시도 빈번','창의적 장난','규칙에 저항'],tip:'퍼즐 장난감과 도전적인 훈련 과제가 필요해요. 탈출 방지 환경 점검도 꼭 하세요.'},
+  ENFJ:{i:'🐩',t:'감성 카리스마 리더',d:'주변 분위기를 민감하게 읽고 가족의 감정에 즉각 반응해요. 다른 반려동물과도 화합을 추구해요.',b:'포메라니안, 코커 스패니얼',keys:['뛰어난 감정 공감 능력','사교적 화합 추구','표현력이 풍부','보호자 감정에 민감'],tip:'긍정적 감정 교류가 핵심이에요. 보호자의 감정이 안정돼야 강아지도 안정돼요.'},
+  ENFP:{i:'🐶',t:'자유로운 탐험 몽상가',d:'매일 새로운 세계를 꿈꾸는 자유로운 영혼이에요. 제약보다 탐험을 원하고 새로운 경험을 적극적으로 받아들여요.',b:'사모예드, 시베리안 허스키',keys:['강렬한 탐험 본능','개방적이고 우호적','집중력이 다소 짧음','풍부한 표현력'],tip:'산책 루트를 자주 바꾸고 새로운 환경을 탐험시켜 주세요.'},
+  ISTJ:{i:'🐾',t:'충직한 평생 경비원',d:'한번 신뢰가 쌓이면 영원히 변하지 않는 충직한 파트너예요. 루틴을 매우 중요시하며 훈련 후 습득한 명령은 오랫동안 기억해요.',b:'저먼 셰퍼드, 삽살개',keys:['최고 수준의 충성심','루틴 의존도 매우 높음','장기 기억력 우수','변화에 민감'],tip:'일관된 루틴이 안정감의 핵심이에요. 환경 변화 시 점진적으로 노출시켜 주세요.'},
+  ISTP:{i:'🐕‍🦺',t:'침착한 고독 탐험가',d:'독립적이고 침착하며 문제를 혼자 해결하는 능력이 탁월해요. 애정 표현은 절제되어 있지만 필요한 순간엔 꼭 옆에 있어 줘요.',b:'시바이누, 말리노이즈',keys:['뛰어난 독립심','침착하고 자율적','절제된 감정 표현','자기 판단 우선'],tip:'자율성을 주는 방식이 효과적이에요. 선택의 자유를 주면 훨씬 잘 따라와요.'},
+  ISFJ:{i:'🐕',t:'조용한 가족 지킴이',d:'소리 없이 깊은 사랑으로 가족을 지키는 헌신적인 타입이에요. 가족의 미묘한 감정 변화를 잘 캐치하고 집 안의 변화에 예민해요.',b:'시추, 코커 스패니얼',keys:['조용하고 헌신적인 애정','섬세한 감정 감지','집 환경 선호','낯선 환경에 경계심'],tip:'안정적인 가정 환경이 가장 행복해요. 사회화를 위해 다양한 상황을 천천히 경험시켜 주세요.'},
+  ISFP:{i:'🐕',t:'감성 자유 아티스트',d:'자유롭고 감수성이 풍부한 예술가형이에요. 자신의 페이스가 있고 강요에 저항해요.',b:'카발리에 킹 찰스, 바센지',keys:['자유로운 탐색 욕구','강압에 저항','섬세한 감수성','자신만의 속도'],tip:'자유롭게 탐색할 시간과 공간을 주세요. 동기 부여 방식의 훈련이 효과적이에요.'},
+  INTJ:{i:'🦊',t:'냉철한 전략가 탐정',d:'에너지를 낭비하지 않고 관찰 후 정확하게 행동하는 전략가예요. 선택적으로 신뢰를 형성하지만 한번 쌓이면 매우 깊어요.',b:'차우차우, 아프간 하운드',keys:['선택적이고 깊은 신뢰','불필요한 사교 회피','관찰 후 행동','높은 독립성'],tip:'신뢰를 서두르지 마세요. 꾸준한 루틴과 일관성이 관계를 깊게 만들어요.'},
+  INTP:{i:'🐾',t:'지적 호기심 탐구자',d:'세상을 자기만의 방식으로 탐구하는 독창적인 지식인이에요. 복잡한 퍼즐 장난감에 빠져들고 혼자 있는 시간도 충분히 즐겨요.',b:'바센지, 아키타',keys:['강한 지적 호기심','독립적 놀이 선호','퍼즐·탐색 탁월','선택적 상호작용'],tip:'노즈워크와 퍼즐 장난감이 최고예요. 자발적 탐색을 지원해 주세요.'},
+  INFJ:{i:'🐩',t:'신비로운 공감 현자',d:'보호자의 감정을 직관적으로 읽는 특별한 능력을 가졌어요. 조용하지만 강한 존재감을 지닌 드문 유형이에요.',b:'그레이하운드, 웰시코기',keys:['직관적 감정 공감','깊고 선택적인 유대','조용한 존재감','섬세한 관찰력'],tip:'감정적으로 안정된 환경을 만들어 주세요. 이 유형은 보호자 스트레스를 고스란히 흡수해요.'},
+  INFP:{i:'🐶',t:'감성 내면 몽상가',d:'풍부한 내면 세계를 가진 감성형이에요. 자신이 신뢰하는 사람에게만 마음을 열고 조용하고 평화로운 환경을 사랑해요.',b:'시추, 페키니즈',keys:['풍부한 내면 감수성','평화로운 환경 선호','선택적 신뢰','섬세한 심리'],tip:'평화롭고 안정적인 환경이 핵심이에요. 큰 소리와 갑작스러운 변화를 피해주세요.'}
+};
+
+// 궁합 데이터: 각 차원 일치/보완 점수
+function compatScore(m1, m2){
+  const dims=['E','S','T','J'];
+  let total=0, dimResults=[];
+  for(let i=0;i<4;i++){
+    const same = m1[i]===m2[i];
+    // 같은 차원 = 기본 호환, 일부 대립은 보완 관계
+    const easyPairs={E:true, J:true}; // 같으면 더 좋음
+    const compPairs={S:true, T:true}; // 달라도 보완 가능
+    let score, label, icon, cls;
+    if(same){
+      score=2; label='잘 맞아요'; icon='😊'; cls='good';
+    } else {
+      if(compPairs[dims[i]]){ score=1; label='보완 관계'; icon='🤝'; cls='ok'; }
+      else { score=0; label='조율 필요'; icon='⚡'; cls='diff'; }
+    }
+    total+=score;
+    dimResults.push({dim:dims[i], label, icon, cls, same});
+  }
+  return {score: Math.round(total/8*100), dimResults};
+}
+
+const compatTitles=[
+  {min:0,max:30,title:'도전적인 만남',desc:'두 강아지의 성격이 많이 달라요. 서로에게 적응하는 시간이 필요하지만, 그만큼 서로를 자극하며 성장할 수 있어요!',color:'#DC2626',tips:['처음엔 중립 장소에서 만남을 시작하세요','각자의 공간을 충분히 확보해 주세요','보호자가 중재하며 긍정적 경험을 쌓아주세요']},
+  {min:31,max:60,title:'균형 잡힌 파트너',desc:'서로 다른 점도 있지만 잘 보완해 주는 관계예요. 함께 있으면 서로에게 없는 것을 채워줄 수 있어요!',color:'#D97706',tips:['함께하는 놀이 시간을 규칙적으로 만들어 주세요','각자의 성격을 존중하며 억지로 어울리게 하지 마세요','긍정적인 경험을 공유할수록 유대가 깊어져요']},
+  {min:61,max:80,title:'좋은 친구 사이',desc:'두 강아지가 꽤 잘 통해요! 비슷한 에너지와 생활 패턴 덕분에 함께 있으면 편안해요.',color:'#0891B2',tips:['함께 산책하며 에너지를 발산시켜 주세요','서로 자극이 될 수 있는 새로운 활동을 시도해 보세요','둘 다 좋아하는 루틴을 만들어 주면 더 행복해해요']},
+  {min:81,max:100,title:'천생연분! 찰떡 궁합',desc:'두 강아지가 정말 잘 맞아요! 비슷한 성격과 생활 패턴으로 함께 있으면 시너지가 나요.',color:'#7C3AED',tips:['함께하는 시간이 많을수록 더 행복해해요','비슷한 특성 덕분에 함께 훈련하기도 수월해요','두 마리가 서로 에너지를 조절해 줄 거예요']}
+];
+
+// ── 상태 ──
+let cur=0, ans=[], dogName='', dog2Name='', dog2Mode=false;
+let result1={mbti:'',pct:{}}, result2={mbti:'',pct:{}};
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+function startQuiz(){
+  dogName=document.getElementById('dog-name-input').value.trim()||'우리 강아지';
+  dog2Mode=false; cur=0; ans=[];
+  show('s-quiz'); renderQ();
+}
+
+function startDog2(){
+  dog2Name=document.getElementById('dog2-name-input').value.trim()||'두 번째 강아지';
+  dog2Mode=true; cur=0; ans=[];
+  show('s-quiz'); renderQ();
+}
+
+function renderQ(){
+  const q=qs[cur];
+  document.getElementById('prog-dim-top').textContent=(dog2Mode?dog2Name+' - ':'')+DIM[q.dim];
+  document.getElementById('prog-num').textContent=(cur+1)+' / '+qs.length;
+  document.getElementById('prog-fill').style.width=(cur/qs.length*100)+'%';
+  document.getElementById('dim-tag-text').textContent=DIM[q.dim];
+  document.getElementById('q-title').textContent=q.q;
+  document.getElementById('q-hint').textContent='💡 '+q.hint;
+  const sel=ans[cur];
+  document.getElementById('q-opts').innerHTML=q.opts.map((o,i)=>mkOpt(i,o,sel)).join('');
+  document.getElementById('btn-next').disabled=(sel===undefined);
+  document.getElementById('btn-prev').style.visibility=cur===0?'hidden':'visible';
+}
+
+function mkOpt(i,o,sel){
+  const cls=sel===i?' sel':'';
+  return `<button class="opt${cls}" onclick="pick(${i})">
+    <div class="opt-score">${['A','B','C','D'][i]}</div>
+    <div class="opt-body"><div class="opt-main">${o.m}</div><div class="opt-detail">${o.d}</div></div>
+  </button>`;
+}
+
+function pick(i){ans[cur]=i;renderQ();}
+function prevQ(){if(cur>0){cur--;renderQ();}}
+function nextQ(){
+  if(ans[cur]===undefined)return;
+  cur++;
+  if(cur>=qs.length){calcResult();return;}
+  renderQ();
+}
+
+function calcResult(){
+  const totals={E:0,S:0,T:0,J:0},cnts={E:0,S:0,T:0,J:0};
+  qs.forEach((q,i)=>{totals[q.dim]+=qs[i].opts[ans[i]].s;cnts[q.dim]++;});
+  const pct={
+    E:Math.round(totals.E/(cnts.E*3)*100),
+    S:Math.round(totals.S/(cnts.S*3)*100),
+    T:Math.round(totals.T/(cnts.T*3)*100),
+    J:Math.round(totals.J/(cnts.J*3)*100)
+  };
+  const mbti=(pct.E>=50?'E':'I')+(pct.S>=50?'S':'N')+(pct.T>=50?'F':'T')+(pct.J>=50?'J':'P');
+
+  if(dog2Mode){
+    result2={mbti,pct};
+    showResult2();
+  } else {
+    result1={mbti,pct};
+    showResult1(mbti,pct);
+  }
+}
+
+function showResult1(mbti,pct){
+  const r=results[mbti]||results['ESFJ'];
+  document.getElementById('r-dog-name-top').textContent=dogName+'의 결과';
+  document.getElementById('r-dog-subtitle').textContent=dogName+'의 성격 유형이에요';
+  document.getElementById('r-icon').textContent=r.i;
+  document.getElementById('r-mbti').textContent=mbti;
+  document.getElementById('r-type').textContent=r.t;
+  document.getElementById('r-desc').textContent=r.d;
+  document.getElementById('r-breed').innerHTML='🐕 유사 견종: '+r.b;
+
+  const dims=[{l:'외향(E)',o:'내향(I)',v:pct.E},{l:'감각(S)',o:'직관(N)',v:pct.S},{l:'감정(F)',o:'사고(T)',v:pct.T},{l:'판단(J)',o:'인식(P)',v:pct.J}];
+  document.getElementById('r-traits').innerHTML=dims.map(d=>{
+    const win=d.v>=50;const lbl=win?d.l:d.o;const p=win?d.v:100-d.v;
+    return `<div class="trait-card"><div class="trait-head"><span class="trait-name">${lbl}</span><span class="trait-pct">${p}%</span></div><div class="trait-track"><div class="trait-fill" style="width:${p}%"></div></div><div class="trait-poles"><span class="trait-pole">${d.l}</span><span class="trait-pole">${d.o}</span></div></div>`;
+  }).join('');
+  document.getElementById('r-keys').innerHTML=`<div class="keys-title">주요 성격 특성</div><div class="keys-list">${r.keys.map(k=>`<div class="key-item"><div class="key-dot"></div>${k}</div>`).join('')}</div>`;
+  document.getElementById('r-tip').innerHTML=`<div class="tip-title">🎓 전문가 훈련 팁</div><div class="tip-text">${r.tip}</div>`;
+
+  // 두번째 강아지 섹션 표시
+  document.getElementById('dog2-section').style.display='block';
+  document.getElementById('btn-show-compat').style.display='none';
+
+  // 공유 카드 데이터 채우기
+  fillShareCard(dogName, mbti, r, pct, dims);
+  show('s-result');
+}
+
+function showResult2(){
+  const r=results[result2.mbti]||results['ESFJ'];
+  // 결과 화면을 두번째 강아지 결과로 업데이트
+  document.getElementById('r-dog-name-top').textContent=dog2Name+'의 결과';
+  document.getElementById('r-dog-subtitle').textContent=dog2Name+'의 성격 유형이에요';
+  document.getElementById('r-icon').textContent=r.i;
+  document.getElementById('r-mbti').textContent=result2.mbti;
+  document.getElementById('r-type').textContent=r.t;
+  document.getElementById('r-desc').textContent=r.d;
+  document.getElementById('r-breed').innerHTML='🐕 유사 견종: '+r.b;
+
+  const pct=result2.pct;
+  const dims=[{l:'외향(E)',o:'내향(I)',v:pct.E},{l:'감각(S)',o:'직관(N)',v:pct.S},{l:'감정(F)',o:'사고(T)',v:pct.T},{l:'판단(J)',o:'인식(P)',v:pct.J}];
+  document.getElementById('r-traits').innerHTML=dims.map(d=>{
+    const win=d.v>=50;const lbl=win?d.l:d.o;const p=win?d.v:100-d.v;
+    return `<div class="trait-card"><div class="trait-head"><span class="trait-name">${lbl}</span><span class="trait-pct">${p}%</span></div><div class="trait-track"><div class="trait-fill" style="width:${p}%"></div></div><div class="trait-poles"><span class="trait-pole">${d.l}</span><span class="trait-pole">${d.o}</span></div></div>`;
+  }).join('');
+  document.getElementById('r-keys').innerHTML=`<div class="keys-title">주요 성격 특성</div><div class="keys-list">${r.keys.map(k=>`<div class="key-item"><div class="key-dot"></div>${k}</div>`).join('')}</div>`;
+  document.getElementById('r-tip').innerHTML=`<div class="tip-title">🎓 전문가 훈련 팁</div><div class="tip-text">${r.tip}</div>`;
+
+  // 두번째 강아지 섹션 숨기고 궁합 버튼 표시
+  document.getElementById('dog2-section').style.display='none';
+  document.getElementById('btn-show-compat').style.display='flex';
+
+  fillShareCard(dog2Name, result2.mbti, r, pct, dims);
+  show('s-result');
+}
+
+function fillShareCard(name, mbti, r, pct, dims){
+  document.getElementById('sc-dog-name').textContent=name+' 의 MBTI';
+  document.getElementById('sc-icon').textContent=r.i;
+  document.getElementById('sc-mbti').textContent=mbti;
+  document.getElementById('sc-type-name').textContent=r.t;
+  document.getElementById('sc-desc').textContent=r.d;
+  document.getElementById('sc-bars').innerHTML=dims.map(d=>{
+    const win=d.v>=50;const lbl=win?d.l:d.o;const p=win?d.v:100-d.v;
+    return `<div class="sc-bar-item"><div class="sc-bar-label"><span>${lbl}</span><span>${p}%</span></div><div class="sc-bar-track"><div class="sc-bar-fill" style="width:${p}%"></div></div></div>`;
+  }).join('');
+}
+
+function showCompat(){
+  if(!result1.mbti||!result2.mbti){showToast('두 마리 테스트를 모두 완료해 주세요!');return;}
+  const {score,dimResults}=compatScore(result1.mbti,result2.mbti);
+  const t=compatTitles.find(t=>score>=t.min&&score<=t.max)||compatTitles[1];
+  const r1=results[result1.mbti]||results['ESFJ'];
+  const r2=results[result2.mbti]||results['ESFJ'];
+  const dimNames={E:'에너지',S:'정보수집',T:'감정반응',J:'생활패턴'};
+
+  document.getElementById('compat-body').innerHTML=`
+    <div class="compat-dogs">
+      <div class="compat-dog">
+        <div class="compat-dog-icon">${r1.i}</div>
+        <div class="compat-dog-name">${dogName}</div>
+        <div class="compat-dog-mbti">${result1.mbti}</div>
+      </div>
+      <div class="compat-heart">💕</div>
+      <div class="compat-dog">
+        <div class="compat-dog-icon">${r2.i}</div>
+        <div class="compat-dog-name">${dog2Name}</div>
+        <div class="compat-dog-mbti">${result2.mbti}</div>
+      </div>
+    </div>
+    <div class="compat-score-card">
+      <div class="compat-score-label">궁합 점수</div>
+      <div><span class="compat-score-num">${score}</span><span class="compat-score-suffix">점</span></div>
+      <div class="compat-score-bar"><div class="compat-score-fill" style="width:${score}%;background:${t.color}"></div></div>
+      <div class="compat-score-title" style="color:${t.color}">${t.title}</div>
+      <div class="compat-score-desc">${t.desc}</div>
+    </div>
+    <div class="compat-dims">
+      ${dimResults.map(d=>`
+        <div class="compat-dim-card">
+          <div class="compat-dim-icon">${d.icon}</div>
+          <div class="compat-dim-label">${dimNames[d.dim]}</div>
+          <div class="compat-dim-result ${d.cls}">${d.label}</div>
+        </div>`).join('')}
+    </div>
+    <div class="compat-tips">
+      <div class="compat-tips-title">💡 함께 생활하는 팁</div>
+      ${t.tips.map(tip=>`<div class="compat-tip-item"><span class="compat-tip-icon">🐾</span>${tip}</div>`).join('')}
+    </div>
+    <div class="compat-btn-row">
+      <button class="btn-compat-save" onclick="saveCompatImage()">📸 궁합 저장</button>
+      <button class="btn-compat-back" onclick="show('s-result')">← 돌아가기</button>
+    </div>
+  `;
+  show('s-compat');
+}
+
+async function saveImage(){
+  const overlay=document.getElementById('saving-overlay');
+  overlay.classList.add('show');
+  try{
+    const card=document.getElementById('share-card');
+    card.style.left='0';card.style.position='fixed';card.style.zIndex='998';
+    await new Promise(r=>setTimeout(r,100));
+    const canvas=await html2canvas(card,{scale:2,useCORS:true,backgroundColor:null,logging:false});
+    card.style.left='-9999px';card.style.zIndex='';card.style.position='fixed';
+    const link=document.createElement('a');
+    link.download=`${dogName}_MBTI_결과.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    overlay.classList.remove('show');
+    showToast('📸 이미지가 저장됐어요! 카카오톡으로 공유해 보세요 🐾');
+  }catch(e){
+    overlay.classList.remove('show');
+    // 모바일 fallback: 새 탭으로 열기
+    const card=document.getElementById('share-card');
+    card.style.left='-9999px';
+    showToast('💡 길게 눌러서 이미지를 저장해 주세요!');
+  }
+}
+
+async function saveCompatImage(){
+  const overlay=document.getElementById('saving-overlay');
+  overlay.classList.add('show');
+  try{
+    const body=document.getElementById('compat-body');
+    const canvas=await html2canvas(body,{scale:2,useCORS:true,backgroundColor:'#F4F3FC',logging:false});
+    const link=document.createElement('a');
+    link.download=`${dogName}_${dog2Name}_궁합.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+    overlay.classList.remove('show');
+    showToast('📸 궁합 이미지가 저장됐어요! 🐾');
+  }catch(e){
+    overlay.classList.remove('show');
+    showToast('💡 길게 눌러서 이미지를 저장해 주세요!');
+  }
+}
+
+function restart(){
+  dog2Mode=false;result1={mbti:'',pct:{}};result2={mbti:'',pct:{}};
+  document.getElementById('dog-name-input').value='';
+  document.getElementById('dog2-name-input').value='';
+  show('s-intro');
+}
+
+window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('splash').classList.add('hide'),1400);});
+</script>
+</body>
+</html>
